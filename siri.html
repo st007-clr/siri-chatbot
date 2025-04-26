@@ -1,0 +1,67 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siri - Mental Health Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body style="background: url('{{ url_for('static', filename='PHOTO-2025-04-26-10-46-00.jpg') }}') no-repeat center center/cover;">
+
+    <div class="main-wrapper">
+        <header>
+            Hi, I'm Siri 🌿
+        </header>
+        <div class="suggestions">
+            <button onclick="fillSuggestion('I am feeling stressed.')">I am feeling stressed</button>
+            <button onclick="fillSuggestion('I feel lonely.')">I feel lonely</button>
+            <button onclick="fillSuggestion('Tips for relaxation?')">Tips for relaxation?</button>
+        </div>
+        <div class="chat-window" id="chat-box"></div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function fillSuggestion(text) {
+            document.getElementById('user-input').value = text;
+            sendMessage();
+        }
+
+        function sendMessage() {
+            const inputField = document.getElementById('user-input');
+            const userMessage = inputField.value.trim();
+            if (!userMessage) return;
+
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML += `<div class="chat-message user"><div class="message-bubble">${userMessage}</div></div>`;
+
+            const spinner = document.createElement('div');
+            spinner.className = 'spinner';
+            chatBox.appendChild(spinner);
+
+            fetch('/get_response', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: userMessage })
+            })
+            .then(response => response.json())
+            .then(data => {
+                spinner.remove();
+                chatBox.innerHTML += `<div class="chat-message bot"><div class="message-bubble">${data.response}</div></div>`;
+                inputField.value = '';
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
+
+        document.getElementById('user-input').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
